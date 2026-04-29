@@ -1,5 +1,8 @@
 import pandas as pd
 from pathlib import Path
+
+from sqlalchemy import create_engine
+from etl.db_config import load_db_config
 from etl.logger import logging, timed, section
 
 
@@ -69,6 +72,12 @@ def save_to_csv(df, filename):
     logging.info(f"Data saved to {filename}")
 
 
+def load_to_postgres(df):
+    engine = create_engine(load_db_config())
+    df.to_sql('job_listings', engine, if_exists='replace', index=False)
+    logging.info("Data loaded to PostgreSQL database successfully.")
+
+
 @timed
 def main():
     section("Loading Data")
@@ -78,7 +87,6 @@ def main():
     section("Transforming Data")
     df = transform_data(df)
     df = extract_experience_level(df)
-
     logging.info(
         f"\033[92m🎉 Data transformation complete. Sample data:\033[0m")
     logging.info(df.head())
@@ -88,6 +96,10 @@ def main():
     save_to_csv(df, transformed_csv_path)
     logging.info(
         f"\033[92m🎉 Transformed data saved to {transformed_csv_path}\033[0m")
+
+    section("Loading Transformed Data to PostgreSQL")
+    load_to_postgres(df)
+    logging.info(f"\033[92m🎉 Data loaded to PostgreSQL successfully.\033[0m")
 
 
 if __name__ == "__main__":
