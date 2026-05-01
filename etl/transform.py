@@ -61,7 +61,7 @@ def extract_experience_level(df):
 
     # Reorder columns
     df = df[["title", "experience_level", "company",
-             "location", "city", "date_posted", "salary", "link"]]
+             "location", "city", "date_posted", "salary", "link", "job_type"]]
 
     return df
 

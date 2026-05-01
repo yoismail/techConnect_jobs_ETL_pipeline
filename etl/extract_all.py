@@ -21,10 +21,11 @@ def extract_job_listings(url):
 
     titles = []
     link = []
-    date_posted = []
+    posting_date = []
     company = []
     location = []
     salary = []
+    job_type = []
 
     for page in pages:
         logging.info(f"Extracting data from page {page}...")
@@ -47,6 +48,7 @@ def extract_job_listings(url):
         logging.info(f"Found {len(job_listings)} jobs on page {page}\n")
 
         for job in job_listings:
+            # Extract job title and link
             title_element = job.find("a", class_="govuk-link")
             if title_element:
                 titles.append(title_element.text.strip())
@@ -57,24 +59,28 @@ def extract_job_listings(url):
                 else:
                     link.append(href)
 
+            # Extract date posted
             date_element = job.find("li")
             if date_element:
-                date_posted.append(date_element.text.strip())
+                posting_date.append(date_element.text.strip())
             else:
-                date_posted.append("Not specified")
+                posting_date.append("Not specified")
 
+            # Extract company name
             company_name = job.find("strong")
             if company_name:
                 company.append(company_name.text.strip())
             else:
                 company.append("Not specified")
 
+            # Extract location
             location_element = job.find("span")
             if location_element:
                 location.append(location_element.text.strip())
             else:
                 location.append("Not specified")
 
+            # Extract salary
             salary_element = job.find(
                 "li", string=lambda text: text and "£" in text)
             if salary_element:
@@ -82,13 +88,22 @@ def extract_job_listings(url):
             else:
                 salary.append("Not specified")
 
+            # Extract job type
+            job_type_element = job.find(
+                "li", class_="govuk-tag govuk-tag--grey govuk-!-margin-right-1 govuk-!-margin-top-1 govuk-!-font-weight-regular job-tag-font-override")
+            if job_type_element:
+                job_type.append(job_type_element.text.strip())
+            else:
+                job_type.append("Not specified")
+
     return pd.DataFrame({
         "Title": titles,
         "Link": link,
-        "Date Posted": date_posted,
+        "Date Posted": posting_date,
         "Company": company,
         "Location": location,
-        "Salary": salary
+        "Salary": salary,
+        "Job Type": job_type
     })
 
 
@@ -104,9 +119,9 @@ def main():
     section("Extracting Job Listings")
     df = extract_job_listings(BASE_URL)
     save_to_csv(df, path_to_csv())
-    logging.info(f"\033[92m🎉 Data extraction complete. Sample data:\033[0m")
+    logging.info(f"\033[92m🎉 Data extraction complete. Sample data:\033[0m\n")
     logging.info(df.head())
-    logging.info(f"Total job listings extracted: {len(df)}")
+    logging.info(f"\033[92mTotal job listings extracted: {len(df)}\033[0m\n")
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ def extract_job_listings(url):
     company = []
     location = []
     salary = []
+    job_type = []
 
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -61,13 +62,22 @@ def extract_job_listings(url):
         else:
             salary.append('Not specified')
 
+        # Job Type
+        job_type_element = job.find(
+            'li', class_='govuk-tag govuk-tag--grey govuk-!-margin-right-1 govuk-!-margin-top-1 govuk-!-font-weight-regular job-tag-font-override')
+        if job_type_element:
+            job_type.append(job_type_element.text.strip())
+        else:
+            job_type.append('Not specified')
+
     return pd.DataFrame({
         'Title': titles,
         'Link': link,
         'Date Posted': date_posted,
         'Company': company,
         'Location': location,
-        'Salary': salary
+        'Salary': salary,
+        'Job Type': job_type
     })
 
 
@@ -84,7 +94,7 @@ def main():
     save_to_csv(df, path_to_csv())
     logging.info(f"\033[92m🎉 Data extraction complete. Sample data:\033[0m")
     logging.info(df.head())
-    logging.info(f"Total job listings extracted: {len(df)}")
+    logging.info(f"\033[92mTotal job listings extracted: {len(df)}\033[0m\n")
 
 
 if __name__ == "__main__":
